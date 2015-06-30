@@ -1,0 +1,14 @@
+{
+  "name": "cache-example",
+  "version": "0.0.0",
+  "description": "Sample Server which demonstrates HTTP Caching",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Matt Winchester",
+  "license": "MIT",
+  "dependencies": {
+    "moment": "^2.10.3"
+  }
+}
