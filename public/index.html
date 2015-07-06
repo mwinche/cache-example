@@ -7,30 +7,65 @@
 		<style>
 			body{
 				transition: background-color 1s ease-in;
+				font-family: Arial, helvetica;
 			}
 			.invalidated{
 				background-color: #FFDDDD;
+			}
+			p, ol, ul, h1, pre{
+				margin: 20px auto;
+				max-width: 800px;
+				background: rgba(255, 255, 255, 0.5);
+				padding: 5px;
+				list-style-position: inside;
 			}
 		</style>
 	</head>
 	<body>
 		<h1>Caching playground</h1>
-		<div>
+		<p>
 			<a href="/">Navigate to /</a>
-		</div>
+		</p>
 		<p>
 			I recommend looking at this page in Incognito Mode (or your browsers equivalent which gives you a blank cache).
 		</p>
 		<p>
-			Go ahead and open your developer tools and check out your network tab.
+			<b>About this page:</b> This page requests 3 JavaScript files, aptly named first.js, second.js and third.js. First.js and second.js both use different caching mechanisms to cache themselves for 15 seconds. First.js uses `cache-control` and `etag` headers. Second.js uses `expires`. Third.js has no caching headers. The etag is just the timestamp from the file system. To help indicate when cache has expired, I have added a timeout to this page that will turn the background red after 15 seconds.
 		</p>
 		<p>
-			Oh and by the way, when the background turns red? That means that first.js's cache has expired.
+			Go ahead and open your developer tools and check out your network tab. I recommend persisting your logs so you can see how the requests change based on the current state and your actions. Try the following actions:
 		</p>
+		<ol>
+			<li>Load from a blank cache</li>
+			<li>Refresh the page within 15 seconds</li>
+			<li>Refresh the page after 15 seconds</li>
+			<li>Click the 'Navigate to /' link within 15 seconds</li>
+			<li>Click the 'Navigate to /' link after 15 seconds</li>
+		</ol>
+		<p>
+			Did you notice the following behavior?
+		</p>
+		<ul>
+			<li>A refresh forced retrival of the assets regardless of caching</li>
+			<li>The etag mitigated the refresh to a 304 response</li>
+			<li>Navigation within the time limit would give `(from cache)` for both caching strategies</li>
+			<li>Once the cache had expired, the etag again mitigated it to a 304</li>
+			<li>`(from cache)` would take 0 ms to get the asset, 304s would be a very short number of ms and a full 200 would take several ms?</li>
+		</ul>
+		<p>
+			Now consider a real web application. In that situation you typically have a much more complex web of required assets, sometimes dozens of them. Some assets would be needed on every page, some only on a few. Some will update with most releases, some rarely at all. You will also have more latency in a production situation. Even a short request multiplied a few dozen times can quickly eat up your 1000ms to glass budget.
+		</p>
+		<p>
+			<b>The conclusion</b> I draw is that an optimal strategy is to cache everything you can as long as possible so you can get as many `(from cache)`s which have no network cost. When a refresh must happen, the cost of the 304s will have to be paid, but we should have as few 200s as possible (should just be AJAX requests and the like).
+		</p>
+		<p>
+			Cache invalidation can be baked into the url so that long cache times won't matter. Cache expiration would just be to free up space on the client's machine. Asset should be sharded into groups that will likely update together and are cohesive. An example:
+		</p>
+		<pre>&lt;script src="titan/core/core.js?version=1.12.3"&gt;&lt;/script&gt;</pre>
 		<script>
 			setTimeout(function(){
 				var p = document.createElement('p');
-				p.innerText = 'first.js ought to be invalidated now.';
+				p.innerText = 'first.js and second.js ought to be invalidated now.';
 				document.body.appendChild(p);
 				document.body.className = 'invalidated';
 			}, 15000);

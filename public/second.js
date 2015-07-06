@@ -1,1 +1,1 @@
-console.log('Hello from second.js! I\'m cached forever. With an expires header!');
+console.log('Hello from second.js! I\'m cached for 15 seconds as well. With an expires header!');

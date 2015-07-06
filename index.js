@@ -43,7 +43,7 @@ var server = http.createServer(function(req, res){
 
 			case SECOND:
 				res.setHeader('content-type', 'text/javascript; charset=UTF-8');
-				res.setHeader('expires', new Date(Date.now() + 18000).toUTCString());
+				res.setHeader('expires', new Date(Date.now() + 15000).toUTCString());
 				res.setHeader('last-modified', stats.mtime.toGMTString());
 				break;
 
@@ -73,9 +73,7 @@ var server = http.createServer(function(req, res){
 		console.log(req.url, res.statusCode);		
 	}
 	catch(e){
-		res.statusCode = 500;
-		res.write(JSON.stringify(e));
-		res.end();
+		console.log(e);
 	}
 });
 
