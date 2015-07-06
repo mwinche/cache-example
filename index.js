@@ -2,56 +2,61 @@
 
 var fs = require('fs');
 var http = require('http');
-var moment = require('moment');
+
+var INDEX = './public/index.html',
+	FIRST = './public/first.js',
+	SECOND = './public/second.js',
+	THIRD = './public/third.js';
+
+var files = {
+	'/': INDEX,
+	'/first.js': FIRST,
+	'/second.js': SECOND,
+	'/third.js': THIRD
+};
 
 var server = http.createServer(function(req, res){
-	var filePath;
-
-	console.log(req.url);
-
-	switch(req.url){
-		case '/':
-		case '/index.html':
-			res.setHeader('cache-control', 'no-cache public');
-			res.setHeader('content-type', 'text/html; charset=UTF-8');
-			filePath = './public/index.html';
-			break;
-		case '/first.js':
-			res.setHeader('cache-control', 'max-age=30');
-			res.setHeader('content-type', 'text/javascript; charset=UTF-8');
-			filePath = './public/first.js';
-			break;
-		case '/second.js':
-			res.setHeader('cache-control', 'private, max-age=3600');
-			res.setHeader('content-type', 'text/javascript; charset=UTF-8');
-			res.setHeader('expires', new Date(Date.now() + 3456000000).toUTCString());
-			filePath = './public/second.js';
-			break;
-		case '/third.js':
-			filePath = './public/third.js';
-			break;
-		case '/matt.jpg':
-			res.setHeader('content-type', 'image/jpg');
-			res.setHeader('cache-control', 'private, max-age=3456000000');
-			res.setHeader('expires', 'Sun, 17-Jan-2038 19:14:07 GMT');
-			filePath = './public/matt.jpg';
-			break;
-		default:
+	try{
+		var filePath = files[req.url];
+		if(!filePath){
 			res.statusCode = 404;
-	}
+			res.end();
+		}
 
-	if(filePath !== undefined){
 		var stats = fs.statSync(filePath);
 		var eTag = '' + stats.mtime.getTime();
 
-		res.statusCode = 200;
 
-		if(filePath !== './public/index.html'){
-			res.setHeader('last-modified', stats.mtime.toGMTString());
-			res.setHeader('etag', eTag);
+		switch(filePath){
+			case INDEX:
+				res.setHeader('cache-control', 'no-cache public');
+				res.setHeader('content-type', 'text/html; charset=UTF-8');
+				break;
+
+
+			case FIRST:
+				res.setHeader('cache-control', 'max-age=15');
+				res.setHeader('content-type', 'text/javascript; charset=UTF-8');
+				res.setHeader('etag', eTag);
+				break;
+
+
+			case SECOND:
+				res.setHeader('content-type', 'text/javascript; charset=UTF-8');
+				res.setHeader('expires', new Date(Date.now() + 18000).toUTCString());
+				res.setHeader('last-modified', stats.mtime.toGMTString());
+				break;
+
+
+			case THIRD:
+				break;
+			default:
+				
 		}
 
-		if(req.headers['if-none-match'] === eTag && filePath !== './public/index.html'){
+		res.statusCode = 200;
+
+		if(req.headers['if-none-match'] === eTag && filePath !== INDEX){
 			res.statusCode = 304;
 
 			res.end();
@@ -60,8 +65,16 @@ var server = http.createServer(function(req, res){
 			res.setHeader('content-length', stats.size);
 			fs.createReadStream(filePath).pipe(res);
 		}
+
+		if(filePath === INDEX){
+			console.log('=======New page request========');
+		}
+
+		console.log(req.url, res.statusCode);		
 	}
-	else{
+	catch(e){
+		res.statusCode = 500;
+		res.write(JSON.stringify(e));
 		res.end();
 	}
 });

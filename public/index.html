@@ -4,10 +4,36 @@
 		<script src="first.js"></script>
 		<script src="second.js"></script>
 		<script src="third.js"></script>
+		<style>
+			body{
+				transition: background-color 1s ease-in;
+			}
+			.invalidated{
+				background-color: #FFDDDD;
+			}
+		</style>
 	</head>
 	<body>
-		<a href="/index.html">
-			<img width="100" src="matt.jpg" />
-		</a>
+		<h1>Caching playground</h1>
+		<div>
+			<a href="/">Navigate to /</a>
+		</div>
+		<p>
+			I recommend looking at this page in Incognito Mode (or your browsers equivalent which gives you a blank cache).
+		</p>
+		<p>
+			Go ahead and open your developer tools and check out your network tab.
+		</p>
+		<p>
+			Oh and by the way, when the background turns red? That means that first.js's cache has expired.
+		</p>
+		<script>
+			setTimeout(function(){
+				var p = document.createElement('p');
+				p.innerText = 'first.js ought to be invalidated now.';
+				document.body.appendChild(p);
+				document.body.className = 'invalidated';
+			}, 15000);
+		</script>
 	</body>
 </html>

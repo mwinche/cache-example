@@ -1,1 +1,1 @@
-console.log('Hello from third.js! I\'m cached for 3 minutes.');
+console.log('Hello from third.js! I don\'t have any caching headers.');

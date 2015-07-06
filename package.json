@@ -7,8 +7,5 @@
     "start": "node index.js"
   },
   "author": "Matt Winchester",
-  "license": "MIT",
-  "dependencies": {
-    "moment": "^2.10.3"
-  }
+  "license": "MIT"
 }
